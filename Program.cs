@@ -1,6 +1,9 @@
-using System.Text.Json;
+using Flexlog_api.Interfaces;
+using Flexlog_api.Middleware;
 using Flexlog_api.Services;
+using Flexlog_api.Services.Authentication;
 using System.Net.WebSockets;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,12 +40,17 @@ builder.Services.AddSingleton<BuildingDataService>();
 // Register WebSocket services
 builder.Services.AddSingleton<FlexlogWebSocketManager>();
 builder.Services.AddHostedService<BuildingUpdateService>();
+builder.Services.AddSingleton<ITokenStore,TokenStore>();
 
 // Configure logging
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 
 var app = builder.Build();
+
+app.UseWhen(ctx => ctx.Request.Path.StartsWithSegments("/api/map"),
+    appBuilder => appBuilder.UseMiddleware<ManualAuthMiddleware>());
+
 
 // ====================================
 // CONFIGURE MIDDLEWARE PIPELINE
