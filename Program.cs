@@ -47,7 +47,8 @@ builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 
 var app = builder.Build();
-
+// Enable CORS
+app.UseCors();
 app.UseWhen(ctx => ctx.Request.Path.StartsWithSegments("/api/map"),
     appBuilder => appBuilder.UseMiddleware<ManualAuthMiddleware>());
 
@@ -63,8 +64,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// Enable CORS
-app.UseCors();
+
 app.UseDefaultFiles();
 app.UseStaticFiles();
 app.UseWebSockets();
@@ -85,7 +85,7 @@ app.Map("/ws", async (HttpContext context, FlexlogWebSocketManager wsManager) =>
         context.Response.StatusCode = 400;
     }
 });
-
+app.UseAuthorization();
 // Map controller endpoints
 app.MapControllers();
 
@@ -104,3 +104,4 @@ app.Logger.LogInformation("Swagger UI: http://localhost:{Port}/swagger", port);
 app.Logger.LogInformation("==============================================");
 
 app.Run();
+ 
